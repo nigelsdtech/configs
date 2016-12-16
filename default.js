@@ -3,6 +3,7 @@ var defer = require('config/defer').deferConfig;
 
 module.exports = {
   appName: process.env.npm_package_config_appName,
+  appInstance: defer(function (cfg) { return cfg.appName.concat((process.env.NODE_ENV)?'-'+process.env.NODE_ENV:'') }),
 
   auth: {
     credentialsDir:   process.env.HOME+"/.credentials",
@@ -19,7 +20,7 @@ module.exports = {
       appenders: [
         {
           type:       "file",
-          filename:   defer(function (cfg) { return cfg.log.logDir.concat("/" , cfg.appName , ".log" ) }),
+          filename:   defer(function (cfg) { return cfg.log.logDir.concat("/" , cfg.appInstance , ".log" ) }),
           category:   defer(function (cfg) { return cfg.appName }),
           reloadSecs: 60,
           maxLogSize: 1024000
@@ -28,8 +29,22 @@ module.exports = {
           type: "console"
         }
       ],
-      replaceConsole: false
+      replaceConsole: true
     },
     logDir: "./logs"
+  },
+
+  reporter: {
+    appName             : defer( function (cfg) { return cfg.appInstance } ),
+    appSpecificPassword : process.env.PERSONAL_APP_SPECIFIC_PASSWORD,
+    clientSecretFile    : defer( function (cfg) { return cfg.auth.clientSecretFile } ),
+    emailsFrom          : "Nigel's Raspberry Pi <"+process.env.PERSONAL_EMAIL+">",
+    googleScopes        : ["https://www.googleapis.com/auth/gmail.send"],
+    name                : "Reporter (Personal)",
+    notificationTo      : process.env.PERSONAL_EMAIL,
+    tokenDir            : defer( function (cfg) { return cfg.auth.tokenFileDir } ),
+    tokenFile           : "access_token_reporter.json",
+    user                : process.env.PERSONAL_GMAIL_USERNAME
   }
+
 }
